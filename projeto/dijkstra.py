@@ -86,78 +86,120 @@ class Graph:
         predecessors = {node: None for node in self.graph}
 
         # ---------------------------------------------------------------------
-        # PASSO 2: Fila de Prioridade (Priority Queue / Min-Heap)
+        # PASSO 2: Fila de Prioridade (Priority Queue / Min-Heap) e Visitados
         # ---------------------------------------------------------------------
-        # Guardaremos tuplas no formato: (distancia_acumulada, nó)
-        # O heapq sempre mantém no topo da fila (índice 0) a menor distância.
+        # O que é uma Fila de Prioridade?
+        # É uma fila inteligente: em vez de atender quem chegou primeiro (FIFO),
+        # ela sempre atende quem tem a MENOR DISTÂNCIA primeiro!
+        #
+        # No Python, usamos tuplas no formato: (distancia, nome_do_nó).
+        # Por que colocar a distância primeiro na tupla?
+        # Porque quando o Python compara duas tuplas, ele sempre olha o primeiro item!
+        # Exemplo: (2, 'C') vem antes de (4, 'B') porque 2 é menor que 4.
+        #
+        # Começamos colocando apenas o nó de partida: distância 0 até 'start_node'.
         priority_queue = [(0, start_node)]
 
-        # Conjunto (set) para registrar nós que já foram finalizados/visitados
+        # 'visited' é um CONJUNTO (set em Python).
+        # Para que serve? Guardar os nós cuja menor distância JÁ FOI DEFINITIVAMENTE ENCONTRADA.
+        # Um conjunto (set) é perfeito aqui porque verificar "se algo está dentro" (x in visited)
+        # é instantâneo em Python (complexidade O(1)).
         visited = set()
 
         # ---------------------------------------------------------------------
-        # PASSO 3: O Laço Principal do Algoritmo
+        # PASSO 3: O Laço Principal do Algoritmo (Processamento dos Nós)
         # ---------------------------------------------------------------------
-        # Enquanto houver nós na fila para analisar:
+        # 'while priority_queue:' significa:
+        # "Enquanto a lista priority_queue NÃO estiver vazia, continue repetindo".
         while priority_queue:
-            # Retira da fila o nó que possui a menor distância conhecida até o momento
+
+            # 'heapq.heappop()' retira e devolve o menor elemento da fila (o topo do min-heap).
+            # Como guardamos tuplas (distancia, nó), usamos duas variáveis para receber os valores:
+            # - current_distance: recebe o número da distância
+            # - current_node: recebe o nome do nó (ex: 'A', 'B', ...)
             current_distance, current_node = heapq.heappop(priority_queue)
 
-            # Se esse nó já foi visitado e finalizado, nós o ignoramos
+            # O Dijkstra garante que na primeira vez que retiramos um nó da fila,
+            # a distância dele já é a menor possível definitiva!
+            # Mas, se o mesmo nó foi inserido mais de uma vez na fila com distâncias
+            # diferentes no passado, nós ignoramos as cópias velhas com este 'if':
             if current_node in visited:
-                continue
+                continue  # 'continue' pula direto para a próxima repetição do while
 
-            # Marca o nó atual como visitado
+            # Se não foi visitado ainda, agora nós o marcamos como visitado!
             visited.add(current_node)
 
             # -----------------------------------------------------------------
             # PASSO 4: Relaxamento das Arestas (Explorar os Vizinhos)
             # -----------------------------------------------------------------
-            # Itera sobre todos os vizinhos do nó atual e seus respectivos pesos
+            # O que é "Relaxamento"?
+            # É o ato de testar se passar pelo nó atual ('current_node') oferece
+            # um atalho mais curto para chegar aos vizinhos dele.
+            #
+            # O método .items() em um dicionário devolve pares (chave, valor).
+            # Aqui:
+            # - 'neighbor': é o nome do vizinho (chave)
+            # - 'weight': é o peso da aresta entre o nó atual e esse vizinho (valor)
             for neighbor, weight in self.graph[current_node].items():
                 
-                # Se o vizinho já foi finalizado, não precisamos recalcular
+                # Se o vizinho já foi visitado e finalizado com sua rota ótima,
+                # não precisamos recalcular nada para ele. Pula para o próximo vizinho!
                 if neighbor in visited:
                     continue
 
-                # Calcula a nova distância hipotética passando pelo 'current_node'
+                # CÁLCULO DO ATALHO:
+                # Distância para chegar até aqui (current_distance) + custo da aresta até o vizinho (weight)
                 distance_candidate = current_distance + weight
 
-                # SE o caminho passando pelo nó atual for MENOR do que a distância
-                # que conhecíamos anteriormente para esse vizinho:
+                # COMPARAÇÃO FUNDAMENTAL:
+                # "O caminho novo (distance_candidate) é MENOR do que a distância
+                # que tínhamos anotada até agora para esse vizinho?"
                 if distance_candidate < distances[neighbor]:
-                    # Atualiza a menor distância até o vizinho
+                    # 1. Atualizamos a tabela com a nova menor distância descoberta:
                     distances[neighbor] = distance_candidate
                     
-                    # Registra que para chegar ao vizinho pelo menor caminho, viemos de current_node
+                    # 2. Anotamos o predecessor: para chegar nesse vizinho pelo melhor caminho,
+                    # o passo anterior foi obrigatoriamente o 'current_node'!
                     predecessors[neighbor] = current_node
                     
-                    # Adiciona o vizinho na fila de prioridade com sua nova menor distância
+                    # 3. Adicionamos esse vizinho na fila de prioridade com o novo custo,
+                    # usando 'heapq.heappush' para manter a fila sempre ordenada pelo menor valor:
                     heapq.heappush(priority_queue, (distance_candidate, neighbor))
 
+        # Quando a fila esvaziar, o algoritmo terminou para todos os nós alcançáveis.
+        # Retornamos os dois dicionários com os resultados.
         return distances, predecessors
 
     def shortest_path(self, start_node, target_node):
         """
         Função auxiliar para reconstruir e retornar o caminho exato
-        (lista de nós) entre start_node e target_node, além da distância total.
+        (lista com a sequência de nós) entre start_node e target_node, além do custo total.
+        
+        Como funciona a reconstrução?
+        Fazemos uma técnica chamada BACKTRACKING (andar de trás para frente):
+        Começamos no nó de destino ('target_node') e vamos perguntando:
+        "Quem é o seu predecessor?" até chegar no nó de origem ('start_node').
         """
-        # Executa o algoritmo de Dijkstra
+        # 1. Executa o algoritmo de Dijkstra a partir da origem
         distances, predecessors = self.dijkstra(start_node)
 
-        # Se a distância permaneceu infinita, não existe caminho até o nó alvo
+        # 2. Se a distância até o alvo permaneceu infinito, significa que
+        # o grafo é desconexo e não há estrada/ligação até o destino!
         if distances[target_node] == float('inf'):
             return None, float('inf')
 
-        # Reconstrói o caminho fazendo o caminho inverso (de trás para frente)
-        # começando pelo destino e voltando pelos predecessores até a origem
+        # 3. Reconstrói o caminho de trás para frente
         path = []
-        current = target_node
+        current = target_node  # Começamos pelo destino
+        
+        # Enquanto não chegamos na origem (cujo predecessor é None):
         while current is not None:
-            path.append(current)
-            current = predecessors[current]
+            path.append(current)          # Adiciona o nó na lista
+            current = predecessors[current]  # Dá um passo para trás usando o predecessor
 
-        # Como montamos de trás para frente, invertemos a lista para ficar: origem -> destino
+        # Como guardamos de trás para frente (ex: ['D', 'E', 'C', 'A']),
+        # usamos path.reverse() para inverter a lista e ficar na ordem correta:
+        # ['A', 'C', 'E', 'D']
         path.reverse()
 
         return path, distances[target_node]
@@ -166,6 +208,8 @@ class Graph:
 # =============================================================================
 # EXEMPLO PRÁTICO DE EXECUÇÃO
 # =============================================================================
+# Esta linha abaixo verifica se o arquivo está sendo executado diretamente
+# (por exemplo: 'python dijkstra.py') e não apenas importado por outro código.
 if __name__ == "__main__":
     print("=" * 60)
     print("DEMONSTRAÇÃO DO ALGORITMO DE DIJKSTRA (Estilo DataCamp)")
@@ -192,6 +236,7 @@ if __name__ == "__main__":
     g.add_edge('D', 'F', 11)
 
     print("\nEstrutura do Grafo (Lista de Adjacência):")
+    # Percorre cada nó e mostra com quem ele se conecta:
     for node, neighbors in g.graph.items():
         print(f"  Nó '{node}' conecta com: {neighbors}")
 
@@ -209,6 +254,7 @@ if __name__ == "__main__":
     path, total_dist = g.shortest_path(start, target)
 
     print(f"\n--- Caminho Mais Curto de '{start}' até '{target}' ---")
+    # ' -> '.join(path) junta os itens da lista com setinhas: "A -> C -> E -> D"
     print(f"  Rota: {' -> '.join(path)}")
     print(f"  Custo Total: {total_dist}")
     print("=" * 60)
