@@ -16,24 +16,27 @@ def dijkstra_ponto_a_ponto(grafo, inicio, fim):
     
     # Fila de prioridades: (distância acumulada, vértice atual)
     fila_prioridade = [(0, inicio)]
-    
-    while fila_prioridade:
+
+    # Indica se já chegamos ao destino (usado para encerrar o laço)
+    chegou_ao_destino = False
+
+    # O laço continua enquanto houver vértices na fila e o destino não tiver sido alcançado
+    while fila_prioridade and not chegou_ao_destino:
         distancia_atual, vertice_atual = heapq.heappop(fila_prioridade)
-        
-        # Parada antecipada: se já chegamos ao destino pretendido, podemos encerrar
+
+        # Parada antecipada: se chegamos ao destino, marcamos para o laço terminar
         if vertice_atual == fim:
-            break
-            
-        if distancia_atual > distancias[vertice_atual]:
-            continue
-            
-        for vizinho, peso in grafo[vertice_atual].items():
-            distancia_nova = distancia_atual + peso
-            
-            if distancia_nova < distancias[vizinho]:
-                distancias[vizinho] = distancia_nova
-                anteriores[vizinho] = vertice_atual
-                heapq.heappush(fila_prioridade, (distancia_nova, vizinho))
+            chegou_ao_destino = True
+
+        # Só analisa os vizinhos se esta for a menor distância conhecida para o vértice
+        elif distancia_atual <= distancias[vertice_atual]:
+            for vizinho, peso in grafo[vertice_atual].items():
+                distancia_nova = distancia_atual + peso
+
+                if distancia_nova < distancias[vizinho]:
+                    distancias[vizinho] = distancia_nova
+                    anteriores[vizinho] = vertice_atual
+                    heapq.heappush(fila_prioridade, (distancia_nova, vizinho))
                 
     # Reconstrução do caminho percorrido do destino de volta até a origem
     caminho = []
