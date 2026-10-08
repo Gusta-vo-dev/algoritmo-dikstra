@@ -1,0 +1,210 @@
+/* Cores usadas na página */
+:root {
+    --fundo: #f1f5f9;
+    --cartao: #ffffff;
+    --texto: #1e293b;
+    --texto-suave: #64748b;
+    --vertice: #64748b;
+    --aresta: #9ca3af;
+    --custo: #b91c1c;
+    --caminho: #2563eb;
+    --extremo: #1d4ed8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+}
+
+header {
+    text-align: center;
+    padding: 24px 16px 8px;
+}
+
+header h1 {
+    margin: 0 0 4px;
+}
+
+header p {
+    margin: 0;
+    color: var(--texto-suave);
+}
+
+/* Layout: painel à esquerda e grafo à direita */
+main {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.painel {
+    flex: 0 0 300px;
+    background: var(--cartao);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.painel h2 {
+    margin-top: 0;
+}
+
+.dica {
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+select,
+button {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+}
+
+button {
+    margin-top: 16px;
+    background: #e2e8f0;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #cbd5e1;
+}
+
+.resultado {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.distancia {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--caminho);
+    margin: 4px 0 12px;
+}
+
+.rota {
+    font-weight: 600;
+}
+
+.trechos {
+    padding-left: 20px;
+    color: var(--texto-suave);
+}
+
+.erro {
+    color: var(--custo);
+}
+
+.area-grafo {
+    flex: 1;
+    background: var(--cartao);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+#grafo {
+    display: block;
+    width: 100%;
+    max-height: 85vh;
+}
+
+/* Elementos do grafo */
+.aresta {
+    stroke: var(--aresta);
+    stroke-width: 2;
+}
+
+.aresta.no-caminho {
+    stroke: var(--caminho);
+    stroke-width: 6;
+}
+
+.custo rect {
+    fill: #ffffff;
+    stroke: var(--custo);
+    stroke-width: 1.5;
+}
+
+.custo text {
+    fill: var(--custo);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.custo.no-caminho rect {
+    fill: var(--caminho);
+    stroke: var(--caminho);
+}
+
+.custo.no-caminho text {
+    fill: #ffffff;
+}
+
+.vertice {
+    cursor: pointer;
+}
+
+.vertice circle {
+    fill: var(--vertice);
+}
+
+.vertice:hover circle {
+    fill: #475569;
+}
+
+.vertice text {
+    fill: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.vertice.no-caminho circle {
+    fill: var(--caminho);
+}
+
+.vertice.extremo circle {
+    fill: var(--extremo);
+    stroke: #93c5fd;
+    stroke-width: 5;
+}
+
+footer {
+    text-align: center;
+    color: var(--texto-suave);
+    padding: 16px;
+    font-size: 14px;
+}
+
+/* Em telas pequenas (celular), o painel fica em cima do grafo */
+@media (max-width: 760px) {
+    main {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .painel {
+        flex: none;
+    }
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algoritmo de Dijkstra</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Algoritmo de Dijkstra</h1>
+        <p>Encontre o menor caminho entre dois vértices do grafo.</p>
+    </header>
+
+    <main>
+        <!-- Painel com a escolha dos vértices e o resultado -->
+        <section class="painel">
+            <h2>Escolha a rota</h2>
+            <p class="dica">Selecione nas listas ou clique nos vértices do grafo.</p>
+
+            <label for="origem">Ponto de partida</label>
+            <select id="origem">
+                <option value="">-- selecione --</option>
+            </select>
+
+            <label for="destino">Ponto de chegada</label>
+            <select id="destino">
+                <option value="">-- selecione --</option>
+            </select>
+
+            <button id="limpar" type="button">Limpar</button>
+
+            <div id="resultado" class="resultado">
+                <p>Escolha a origem e o destino para ver o menor caminho.</p>
+            </div>
+        </section>
+
+        <!-- Área onde o grafo é desenhado pelo script.js -->
+        <section class="area-grafo">
+            <svg id="grafo" viewBox="50 60 810 1190" role="img" aria-label="Grafo com os custos de cada aresta"></svg>
+        </section>
+    </main>
+
+    <footer>
+        Alunos: Matheus Schramm e Gustavo Pickler &middot; Turma: T32
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
