@@ -1,4 +1,5 @@
-/* Cores usadas na página */
+@charset "UTF-8";
+
 :root {
     --fundo: #f1f5f9;
     --cartao: #ffffff;
@@ -81,12 +82,14 @@ button {
 
 button {
     margin-top: 16px;
-    background: #e2e8f0;
+    background: #db1111c5;
+    color: white;
     cursor: pointer;
+    transition: 0.3s;
 }
 
 button:hover {
-    background: #cbd5e1;
+    background: #882f3a;
 }
 
 .resultado {
