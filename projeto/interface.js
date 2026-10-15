@@ -1,25 +1,10 @@
 // ============================================================
-// 1. DADOS DO GRAFO (o mesmo grafo do dijkstra.py)
+// 1. DADOS DO GRAFO
 // ============================================================
 
-// Cada vértice tem seus vizinhos e o custo para chegar até eles
-const grafo = {
-    RS: { TA: 7, RO: 5, TC: 4, LO: 2, PG: 6, PR: 9, IB: 5, IT: 8 },
-    TA: { LA: 4, SA: 5, AG: 9, RS: 7, PR: 12 },
-    LA: { TA: 4, RO: 3 },
-    SA: { TA: 5, TC: 6 },
-    RO: { LA: 3, AG: 4, RS: 5, IT: 14 },
-    TC: { SA: 6, RS: 4, LO: 3, IT: 11 },
-    AG: { TA: 9, RO: 4, WI: 6, IB: 10 },
-    LO: { TC: 3, RS: 2, PG: 4, IB: 8 },
-    PG: { LO: 4, RS: 6, VR: 3, PR: 13, IB: 7 },
-    WI: { AG: 6, AU: 2, PR: 5, IB: 6 },
-    AU: { WI: 2, PR: 3, IT: 9 },
-    VR: { PG: 3, IT: 4 },
-    PR: { TA: 12, RS: 9, WI: 5, AU: 3, PG: 13 },
-    IB: { RS: 5, AG: 10, LO: 8, PG: 7, WI: 6, IT: 2 },
-    IT: { RS: 8, RO: 14, TC: 11, VR: 4, AU: 9, IB: 2 }
-};
+// O grafo e o cálculo do menor caminho ficam no Python (dijkstra.py).
+// A página pede os dados ao servidor do dijkstra.py quando abre.
+let grafo = {};
 
 // Nome da cidade que cada sigla representa
 const nomes = {
@@ -76,71 +61,20 @@ const RAIO_VERTICE = 36;
 
 
 // ============================================================
-// 2. ALGORITMO DE DIJKSTRA
+// 2. COMUNICAÇÃO COM O PYTHON (dijkstra.py)
 // ============================================================
 
-function dijkstra(grafo, inicio, fim) {
-    const distancias = {};   // menor distância conhecida até cada vértice
-    const anteriores = {};   // de qual vértice chegamos (para montar o caminho)
-    const visitados = {};    // vértices que já foram analisados
+// Pede ao servidor o grafo definido no dijkstra.py
+async function buscarGrafo() {
+    const resposta = await fetch("/grafo");
+    return await resposta.json();
+}
 
-    // No começo, todas as distâncias são "infinitas"
-    for (const vertice in grafo) {
-        distancias[vertice] = Infinity;
-        anteriores[vertice] = null;
-        visitados[vertice] = false;
-    }
-    distancias[inicio] = 0;
-
-    let chegouAoDestino = false;
-
-    while (!chegouAoDestino) {
-        // Procura o vértice não visitado com a menor distância
-        let atual = null;
-        for (const vertice in grafo) {
-            if (!visitados[vertice] && (atual === null || distancias[vertice] < distancias[atual])) {
-                atual = vertice;
-            }
-        }
-
-        // Se não sobrou nenhum vértice alcançável, encerramos
-        if (atual === null || distancias[atual] === Infinity) {
-            chegouAoDestino = true;
-        } else {
-            visitados[atual] = true;
-
-            // Parada antecipada: chegamos ao destino
-            if (atual === fim) {
-                chegouAoDestino = true;
-            } else {
-                // Atualiza a distância dos vizinhos se encontrarmos um caminho melhor
-                for (const vizinho in grafo[atual]) {
-                    const distanciaNova = distancias[atual] + grafo[atual][vizinho];
-
-                    if (distanciaNova < distancias[vizinho]) {
-                        distancias[vizinho] = distanciaNova;
-                        anteriores[vizinho] = atual;
-                    }
-                }
-            }
-        }
-    }
-
-    // Caso não exista rota entre os dois pontos
-    if (distancias[fim] === Infinity) {
-        return { distancia: Infinity, caminho: [] };
-    }
-
-    // Monta o caminho do destino de volta até a origem
-    const caminho = [];
-    let atual = fim;
-    while (atual !== null) {
-        caminho.push(atual);
-        atual = anteriores[atual];
-    }
-    caminho.reverse();
-
-    return { distancia: distancias[fim], caminho: caminho };
+// Pede ao servidor o menor caminho, calculado pela função
+// dijkstra_ponto_a_ponto do dijkstra.py
+async function calcularNoPython(origem, destino) {
+    const resposta = await fetch("/calcular?origem=" + origem + "&destino=" + destino);
+    return await resposta.json();
 }
 
 
@@ -310,7 +244,7 @@ function clicarVertice(vertice) {
 }
 
 // Calcula e mostra o resultado sempre que a escolha muda
-function atualizar() {
+async function atualizar() {
     const origem = selectOrigem.value;
     const destino = selectDestino.value;
 
@@ -320,9 +254,10 @@ function atualizar() {
         return;
     }
 
-    const resposta = dijkstra(grafo, origem, destino);
+    const resposta = await calcularNoPython(origem, destino);
 
-    if (resposta.distancia === Infinity) {
+    // O Python devolve distância vazia (null) quando não existe caminho
+    if (resposta.distancia === null) {
         destacarCaminho([]);
         resultado.innerHTML = '<p class="erro">Não há caminho entre ' + nomes[origem] + " e " + nomes[destino] + ".</p>";
         return;
@@ -360,6 +295,17 @@ selectOrigem.addEventListener("change", atualizar);
 selectDestino.addEventListener("change", atualizar);
 botaoLimpar.addEventListener("click", limpar);
 
-// Inicia a página
-preencherListas();
-desenharGrafo();
+// Inicia a página: busca o grafo no Python e depois desenha
+async function iniciar() {
+    try {
+        grafo = await buscarGrafo();
+        preencherListas();
+        desenharGrafo();
+    } catch (erro) {
+        resultado.innerHTML =
+            '<p class="erro">Não foi possível falar com o Python. ' +
+            "Abra a interface rodando <b>python dijkstra.py</b> na pasta do projeto.</p>";
+    }
+}
+
+iniciar();
