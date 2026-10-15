@@ -183,6 +183,20 @@ button:hover {
     pointer-events: none;
 }
 
+/* Nome da cidade abaixo do vértice, com contorno branco para ler por cima das linhas */
+.vertice .nome-cidade {
+    fill: var(--texto);
+    font-size: 17px;
+    font-weight: 600;
+    stroke: #ffffff;
+    stroke-width: 5px;
+    paint-order: stroke;
+}
+
+.vertice.no-caminho .nome-cidade {
+    fill: var(--extremo);
+}
+
 .vertice.no-caminho circle {
     fill: var(--caminho);
 }

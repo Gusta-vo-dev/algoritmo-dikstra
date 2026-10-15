@@ -21,6 +21,25 @@ const grafo = {
     IT: { RS: 8, RO: 14, TC: 11, VR: 4, AU: 9, IB: 2 }
 };
 
+// Nome da cidade que cada sigla representa
+const nomes = {
+    RS: "Rio do Sul",
+    TA: "Taió",
+    LA: "Laurentino",
+    SA: "Salete",
+    RO: "Rio do Oeste",
+    TC: "Trombudo Central",
+    AG: "Agronômica",
+    LO: "Lontras",
+    PG: "Presidente Getúlio",
+    WI: "Witmarsum",
+    AU: "Aurora",
+    VR: "Vidal Ramos",
+    PR: "Pouso Redondo",
+    IB: "Ibirama",
+    IT: "Ituporanga"
+};
+
 // Posição (x, y) de cada vértice na tela, igual ao desenho do PDF
 const posicoes = {
     TA: { x: 455, y: 110 },
@@ -213,6 +232,13 @@ function desenharGrafo() {
         texto.textContent = vertice;
         grupo.appendChild(texto);
 
+        // Nome da cidade logo abaixo do círculo
+        const nomeCidade = criarElemento("text", {
+            x: p.x, y: p.y + RAIO_VERTICE + 20, "text-anchor": "middle", class: "nome-cidade"
+        });
+        nomeCidade.textContent = nomes[vertice];
+        grupo.appendChild(nomeCidade);
+
         // Clicar em um vértice escolhe a origem ou o destino
         grupo.addEventListener("click", function () {
             clicarVertice(vertice);
@@ -266,8 +292,9 @@ const resultado = document.getElementById("resultado");
 // Preenche as listas de seleção com os vértices do grafo
 function preencherListas() {
     for (const vertice in grafo) {
-        selectOrigem.appendChild(new Option(vertice, vertice));
-        selectDestino.appendChild(new Option(vertice, vertice));
+        const texto = vertice + " - " + nomes[vertice];
+        selectOrigem.appendChild(new Option(texto, vertice));
+        selectDestino.appendChild(new Option(texto, vertice));
     }
 }
 
@@ -297,7 +324,7 @@ function atualizar() {
 
     if (resposta.distancia === Infinity) {
         destacarCaminho([]);
-        resultado.innerHTML = '<p class="erro">Não há caminho entre ' + origem + " e " + destino + ".</p>";
+        resultado.innerHTML = '<p class="erro">Não há caminho entre ' + nomes[origem] + " e " + nomes[destino] + ".</p>";
         return;
     }
 
@@ -308,13 +335,18 @@ function atualizar() {
     for (let i = 0; i < resposta.caminho.length - 1; i++) {
         const a = resposta.caminho[i];
         const b = resposta.caminho[i + 1];
-        trechos += "<li>" + a + " → " + b + ": " + grafo[a][b] + "</li>";
+        trechos += "<li>" + nomes[a] + " → " + nomes[b] + ": " + grafo[a][b] + "</li>";
     }
 
+    // Troca cada sigla do caminho pelo nome da cidade
+    const nomesDoCaminho = resposta.caminho.map(function (vertice) {
+        return nomes[vertice];
+    });
+
     resultado.innerHTML =
-        "<p>Distância mínima de " + origem + " até " + destino + ":</p>" +
+        "<p>Distância mínima de " + nomes[origem] + " até " + nomes[destino] + ":</p>" +
         '<p class="distancia">' + resposta.distancia + "</p>" +
-        '<p class="rota">Rota: ' + resposta.caminho.join(" → ") + "</p>" +
+        '<p class="rota">Rota: ' + nomesDoCaminho.join(" → ") + "</p>" +
         '<ul class="trechos">' + trechos + "</ul>";
 }
 
