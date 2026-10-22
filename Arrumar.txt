@@ -1,7 +1,0 @@
-coisas que precisam ser arrumadas no artigo:
-
-Referencias: ver se estão coerentes.
-
-blocos de código: nos casos de códigos de explicação pode deixar mais simples para entender, e com formato de bloco de código. Já nos blocos que mostram códigos retirados do nosso arquivo, tente deixar quase como se tivesse sido tirado um print do código fonte, com a fonte colorida como no vscode de verdade.
-
-lista de arestas e custos (pagina 6): verificar se está tudo de acordo com o grafo.
